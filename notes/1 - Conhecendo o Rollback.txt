@@ -1,2 +1,20 @@
 preparando o rollback:
 
+primeiro comecamos a falar sobre o que se trata o rollback, bom de uma forma mais
+resumida se trata, por exemplo, onde fizemos alguma modificacao no nosso container
+que esta em prod, essa modificacao aprensetou uma falha durante a execucao do app
+o rollback basicamente ao detectar a falha, ira retornar o container do app para a 
+versao anterior, onde tinha o funcionamento completo e sem falhas.
+
+e para isso, precisamos primeiro realizar a copia do nosso task-definition antes do
+mesmo ser sobrescrito com a nova definicao da rotina seguinte, isso falando do arquivo
+ecs.yml, no seguinte bloco de cod:
+
+      - name: OBTER ARQUIVO DA TASK
+        run: aws ecs describe-task-definition --task-definition task-api-go --query taskDefinition > task-definition.json
+
+      - name: COPIA TASK-DEFINITION
+        run: cp task-definition.json task-definition.json.old
+
+aqui estamos criando a copia da task antes dela ser modificada com o job seguinte, com a
+atualizacao do container. Assim criando um arquivo onde possamos usar caso necessario.

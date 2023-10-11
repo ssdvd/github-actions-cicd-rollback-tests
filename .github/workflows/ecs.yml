@@ -1,0 +1,47 @@
+# NOME DA ROTINA
+name: Entrega Contínua
+
+# QUANDO SERÁ EXECUTADO: NA CHAMADA DO ARQUIVO
+on:
+  workflow_call:
+
+# TAREFAS
+jobs:
+  ecs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Autenticando credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: OBTER ARQUIVO DA TASK
+        run: aws ecs describe-task-definition --task-definition task-api-go --query taskDefinition > task-definition.json
+
+      - name: COPIA TASK-DEFINITION
+        run: cp task-definition.json task-definition.json.old
+
+      - name: COLANDO NOVO ID DA IMAGEM NA DEFINICAO DE TAREFA ECS
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+            task-definition: task-definition.json
+            container-name: go
+            image: ssdvd/go_ci:${{github.run_number}}
+            environment-variables: |
+                HOST= ${{ secrets.DBHOST }}
+                USER= ${{ secrets.DBUSER }}
+                PASSWORD= ${{ secrets.DBPASSWORD }}
+                BDNAME= ${{ secrets.DBNAME }}
+                DBPORT= ${{ secrets.DBPORT }}
+                PORT= 8000
+
+      - name: Fazendo o Deploy da definicao da tarefa no AWS ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+            task-definition: ${{ steps.task-def.outputs.task-definition }}
+            service: service-api-go
+            cluster: api-go
+            wait-for-service-stability: false
