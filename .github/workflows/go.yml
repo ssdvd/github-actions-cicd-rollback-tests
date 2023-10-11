@@ -1,0 +1,75 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+
+  test:
+    runs-on: '${{ matrix.os }}'
+    env:
+      HOST: localhost
+      DBPORT: 5432
+      USER: root
+      PASSWORD: root
+      DBNAME: root
+    strategy:
+      matrix:
+        go_version: ['1.19', '1.20', '>=1.20']
+        os: ['ubuntu-latest']
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '${{ matrix.go_version }}'
+
+    - name: env off
+      run: go env -w GO111MODULE=off
+
+    - name: build-db
+      run: docker-compose build
+
+    - name: create-db
+      run: docker-compose up -d
+
+#    - name: Test
+#      run: go test -v main_test.go
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build
+      run: ls #go build -v main.go
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.3
+      with:
+        name: app_go
+        path: main
+
+  docker:
+    needs: build
+    uses: ./.github/workflows/docker.yml
+    secrets: inherit
+
+#  deploy_ec2:
+#    needs: build
+#    uses: ./.github/workflows/ec2.yml
+#    secrets: inherit
+
+  
+  deploy_ecs: # NOME DA TAREFA 
+    needs: docker # E EXETCUTADA SO DEPOIS DA TASK docker FOR CONCLUIDA
+    uses: ./.github/workflows/ecs.yml #ARQUIVO QUE SERA UTILIZADO
+    secrets: inherit # VAI HERDAR OS SECRETS DO REPO
