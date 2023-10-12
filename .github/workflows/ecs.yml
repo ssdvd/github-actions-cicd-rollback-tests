@@ -45,3 +45,16 @@ jobs:
             service: service-api-go
             cluster: api-go
             wait-for-service-stability: false
+
+      - name: Requisicao
+        continue-on-error: true 
+        run: echo "REQUEST=0" >> $GITHUB_ENV ; sleep 30s ; wget lb-service-api-go-1199322905.us-east-2.elb.amazonaws.com:8000/leo || echo "REQUEST=1" >> $GITHUB_ENV
+
+      - name: Fazendo o rollback do Deploy da definicao da tarefa no AWS ECS
+        if: ${{ env.REQUEST != 0}}
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+            task-definition: task-definition.json.old
+            service: service-api-go
+            cluster: api-go
+            wait-for-service-stability: false

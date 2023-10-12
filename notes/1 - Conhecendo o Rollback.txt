@@ -18,3 +18,38 @@ ecs.yml, no seguinte bloco de cod:
 
 aqui estamos criando a copia da task antes dela ser modificada com o job seguinte, com a
 atualizacao do container. Assim criando um arquivo onde possamos usar caso necessario.
+
+Requisicao:
+
+o rollback pode ser divido em duas partes a verificacao e caso a verificao acusar problemas
+podemos dar andamento na segunda etapa que seria o rollback de fato. e para realizar
+essa verificacao podemos executar comandos, da seguinte maneira:
+
+- name: Requisicao
+        continue-on-error: true 
+        run: sleep 30s ; wget lb-service-api-go-1199322905.us-east-2.elb.amazonaws.com:8000/leo
+
+
+nesse job, estamos criando uma requisicao para acessar nosso app, com o nome requisicao
+e com a chave continue-on-error : true, estamos dizendo que os jobs seguintes a esses
+ainda serao executado, por padrao o github encerra todos os passos se algum job apresentar 
+erro, esse comando faz com que continue. em run: estamos executando o comando sleep 30s
+que e para executar o comando seguinte, somente depois que 30s passarem. ele esta ai
+devido a chave wait-for-service-stability estar como true. E o wget essa realizando 
+essa requisicao acessando nosso loadbalancer do app esperando que a api responda.
+
+Nessa aula, você aprendeu como:
+
+Realizar uma cópia de segurança da tarefa do ECS usando o comando cp para podermos 
+usá-la futuramente no rollback;
+
+Montar uma requisição com o wget, com o intuito de verificar se a aplicação está 
+funcionando corretamente;
+
+Continuar a execução de uma rotina mesmo se um erro for encontrado durante a sua 
+execução (mas só utilize o continue-on-error quando é esperado que um erro possa 
+ocorrer);
+
+Fazer a rotina esperar por um tempo usando o sleep, o que permite que a aplicação 
+esteja funcionando corretamente e sem o problema de gerar um falso negativo durante 
+a requisição pela aplicação não estar cadastrada no balanceador de carga.

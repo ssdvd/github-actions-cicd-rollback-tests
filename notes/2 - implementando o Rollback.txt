@@ -1,0 +1,83 @@
+retornando a tarefa:
+
+para retornamos a tarefa, devemos:
+
+      - name: Fazendo o rollback do Deploy da definicao da tarefa no AWS ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+            task-definition: task-definition.json.old
+            service: service-api-go
+            cluster: api-go
+            wait-for-service-stability: false
+
+com esse bloco de codigo estamos realizando o retorno da antiga task-definition,
+podemos ver que na chave task-definition, estamos colocando o valor com o nome igual
+ao do arquivo task-definition onde realizamos a copia com o job:
+
+      - name: COPIA TASK-DEFINITION
+        run: cp task-definition.json task-definition.json.old
+
+com isso feito, podemos agora construir a parte em que definimos como sera executado 
+o rollback.
+
+IF na rotina:
+
+da mesma for que existe o if dentro das linguagens de programacao, podemos utilizas
+dentro da nossa rotina, e para cada passo da rotina, podemos executar um tipo de IF
+conforme a nossa necessidade. Como o nosso caso e referente a execucao de um job
+iremos utilizar o IF do tipo job e iremos criar uma condicao para que o job seja ou 
+nao executado, da seguinte forma:
+
+      - name: Fazendo o rollback do Deploy da definicao da tarefa no AWS ECS
+        if: ${{aqui irao ter as instrucoes da condicao}}
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+            task-definition: task-definition.json.old
+            service: service-api-go
+            cluster: api-go
+            wait-for-service-stability: false
+
+e como podemos observar que apos o nome do job, estamos introduzindo o if, no qual
+compoe apos os dois pontos, dentro de ${{}} eles estaram dentro desses caracteres
+como medida de boa praticas, pois assim, nao irao aparecer durante a execucao dos 
+jobs.
+
+variaveis:
+
+para criamos a condicao, primeiro iremos criar as variaveis necessarias para a mesma,
+da seguinte forma no job:
+
+      - name: Requisicao
+        continue-on-error: true 
+        run: echo "REQUEST=0" >> $GITHUB_ENV ; sleep 30s ; wget lb-service-api-go-1199322905.us-east-2.elb.amazonaws.com:8000/leo || echo "REQUEST=1" >> $GITHUB_ENV
+
+em run, estamos criando uma variavel com o nome request=0 e direcionando para uma 
+variavel dentro do GITHUB_ENV, e depois executamos o sleep 30s, e o wget no nosso lb,
+ e se por acaso nao conseguirmos uma resposta dessa requisicoes, mudamos o valor da
+ variaveis criada para REQUEST=1, assim dentro um variavel para podermos montar a 
+ condicao no IF, que ficara dessa forma: 
+
+      - name: Fazendo o rollback do Deploy da definicao da tarefa no AWS ECS
+        if: ${{ env.REQUEST != 0}}
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+            task-definition: task-definition.json.old
+            service: service-api-go
+            cluster: api-go
+            wait-for-service-stability: false
+
+
+podemos ver que na chave if, criamos a condicao para que se caso a variavel de
+ambiente REQUEST do github for diferente de 0, esse job sera executado. Assim
+tornando o rollback possivel!
+
+Nessa aula, você aprendeu como:
+
+Retornar para uma versão mais antiga da tarefa, impedindo que a aplicação fique fora 
+do ar por conta de uma atualização problemática;
+
+Como utilizar o IF para decidir se um passo deve ser executado, ou não, e permitir 
+com que seja possível realizar o rollback apenas se for necessário;
+
+Criar variáveis de ambiente através de comandos, possibilitando a troca de informações 
+através de diferentes passos de uma tarefa ou job.
