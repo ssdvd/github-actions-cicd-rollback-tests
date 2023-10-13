@@ -1,0 +1,59 @@
+preparando o load test:
+
+primeiro explicando o objetivo do teste de carga, basicamente iremo simular o ambiente
+de producao onde iremos mandar diversas requisicoes para o nosso app, para ver
+ate onde podemos ir e termos uma base de ate a onde podemos ir com a infra que
+foi implantada inicialmente. Feito o teste podemos ter uma ideia do quanto de infra
+e possiveis gargalos no app. 
+
+E para realizar esse tipo de teste, iremos utilizar uma ferramenta desenvolvida em 
+python, onde a mesma permite e simula um ambiente, onde diversas requisicoes estao 
+sendo enviada para o app. o nome dessa ferramenta e LOCUST. e com isso em mente
+iremos criar uma rotina de loadtest no arquivo loadtest.yml, com o seguinte conteudo:
+
+# NOME DA ROTINA
+name: Load Test
+
+# QUANDO SERÁ EXECUTADO: NA CHAMADA DO ARQUIVO
+on:
+  workflow_call:
+
+# TAREFAS
+jobs:
+  loadtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Autenticando credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+
+nesse trecho de codigo, estamos iniciando nossa rotina load test, e somente sera
+executada quando for solicitada em outra rotina, e nos job dela iremos utilizar
+o actions/checkout@v3, que iremos organizar os arquivos do nosso repositorio para
+essa rotina. Tomar cuidado, pois esse comando pode apagar alguns arquivo que podem
+ser usado para outros tipos de rotina.
+
+IF na branch:
+
+apos criarmos o arquivo do loadtest, temos que criar a chamada da rotina dentro da
+nossa rotina principal que e go.yml, e para isso devemos inserir o seguinte trecho
+de cod:
+
+  loadtest: # NOME DA TAREFA 
+    needs: docker # E EXETCUTADA SO DEPOIS DA TASK docker FOR CONCLUIDA
+    if: ${{ github.ref_name == 'main' }}
+    uses: ./.github/workflows/loadtest.yml #ARQUIVO QUE SERA UTILIZADO
+    secrets: inherit # VAI HERDAR OS SECRETS DO REPO
+
+o nome do job e loadtest, e para ser executado ele precisa que o job docker tenha sido
+executado com sucesso, para so entao entrar na condicao se sera executado ou nao, na
+chave if estamos criando a condicao em que verificamos em qual branch estamos e 
+se ela e a mesma que definimos para a execucao, se for a rotina sera executada e 
+continuara para o arquivo da rotina. em uses indicamos o caminho do arquivo dentro
+do repositorio, e em secrets estamos herdando os secrets do repo para a rotina.

@@ -73,3 +73,9 @@ jobs:
     needs: docker # E EXETCUTADA SO DEPOIS DA TASK docker FOR CONCLUIDA
     uses: ./.github/workflows/ecs.yml #ARQUIVO QUE SERA UTILIZADO
     secrets: inherit # VAI HERDAR OS SECRETS DO REPO
+
+  loadtest: # NOME DA TAREFA 
+    needs: docker # E EXETCUTADA SO DEPOIS DA TASK docker FOR CONCLUIDA
+    if: ${{ github.ref_name == 'main' }}
+    uses: ./.github/workflows/loadtest.yml #ARQUIVO QUE SERA UTILIZADO
+    secrets: inherit # VAI HERDAR OS SECRETS DO REPO
