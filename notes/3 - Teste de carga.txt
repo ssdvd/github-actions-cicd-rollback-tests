@@ -71,3 +71,14 @@ git clone https://github.com/leollo98/Infra_CI
 feito isso, o clone sera feito dentro do repositorio de onde vc executar o comando.
 que no caso como sera feito na rotina, o repo ficara na instancia criada pelo github
 actions, e a partir dela poderemos executa-la.
+
+Nessa aula, você aprendeu:
+O que é o teste de carga e para que serve, onde temos a sua utilização para averiguar
+ o desempenho da aplicação, e não apenas se ela funciona ou não;
+
+Sobre os dois programas mais utilizados para realização do teste de carga, estão as 
+duas opções: o Jmeter, em java, e o Locust, em python;
+
+Como utilizar o IF para decidir se uma rotina deve ou não ser executada dependendo 
+da branch em que estamos, o que pode nos ajudar para diferentes ambientes, como 
+desenvolvimento e produção.
