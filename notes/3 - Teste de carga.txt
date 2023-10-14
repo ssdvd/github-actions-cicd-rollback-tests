@@ -57,3 +57,17 @@ chave if estamos criando a condicao em que verificamos em qual branch estamos e
 se ela e a mesma que definimos para a execucao, se for a rotina sera executada e 
 continuara para o arquivo da rotina. em uses indicamos o caminho do arquivo dentro
 do repositorio, e em secrets estamos herdando os secrets do repo para a rotina.
+
+repositorio de infra:
+
+disponibilizaram um repo de IaC, utilizando o terraform para provisionar a infra que
+ira realizar o teste de carga, para que fique mais dinamico, e para utilizamos devemos
+ou fazer o download do repo com zip ou um clone utilizando o git, temos a opcao de
+farzermos um fork do repo para utilizar dentro dos nossos repositorios. E para isso
+podemos dar o seguinte comando para clonar o repositorio:
+
+git clone https://github.com/leollo98/Infra_CI
+
+feito isso, o clone sera feito dentro do repositorio de onde vc executar o comando.
+que no caso como sera feito na rotina, o repo ficara na instancia criada pelo github
+actions, e a partir dela poderemos executa-la.
