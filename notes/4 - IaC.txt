@@ -1,0 +1,12 @@
+Terraform:
+
+para instalarmos o terraform na nossa rotina de teste, podemos utilizar um dos
+repositorios do marketplace disponiveis dentro do github, com o seguinte bloco de 
+codigo:
+
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v2.0.3
+
+com essas duas linhas, ja estamos deixando disponivel a utilizacao do terraform,
+pronta para receber o arquivo de iac, para poder provisionar a infra do projeto,
+de maneira simples e objetiva.
