@@ -10,3 +10,63 @@ codigo:
 com essas duas linhas, ja estamos deixando disponivel a utilizacao do terraform,
 pronta para receber o arquivo de iac, para poder provisionar a infra do projeto,
 de maneira simples e objetiva.
+
+criando a infraestrutura:
+
+para criarmos a infra dentro da rotina, devemos utilizar os seguintes comandos:
+
+      - run: terraform -chdir=Infra_CI/env/homolog init
+
+Aqui estamos utilizando o comando init do terraform, para primeiro baixar os plugins
+necessarios para iniciar a infra.
+
+      - run: terraform -chdir=Infra_CI/env/homolog destroy auto-approve
+
+Esse comando e usado para destruir qualquer infra que possa ter sido criada anteriormente
+com as execucoes antigas.
+
+      - run: terraform -chdir=Infra_CI/env/homolog apply auto-approve
+
+aqui estamos provisionando toda a infra, utilizando do parametro auto-approve, para 
+que seja criado sem nem ter pergunta de confirmacao
+
+      - run: echo "$(terraform chdir=Infra_CI/env/homolog output -raw IP_alb)"
+
+aqui estamos printando no prompt utilizando o comando echo para executar o comando do
+terraform para printar o output do ip do alb em formato texto(raw), o motivo para que
+o comando esteja dentro de "$(comando aqui)", serve para que o comando echo execute o 
+comando de dentro.
+
+python e pip:
+
+para poder instalarmos o python dentro da nossa rotina do loadtest, podemos utilizar o 
+repo do marketplace do github actions, e com o seguinte bloco de cod:
+
+      - name: Setup Python
+        uses: actions/setup-python@v4.7.1
+        with:
+          python-version: 3.10
+
+aqui estamos criando um job que instalar o python e tambem passamos como parametro a
+versao do python, que e a 3.10, qual e importante para para o repo de que clonamos.
+e para poder instalar o locust utilizando o pip, podemos usar da seguinte forma:
+
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: |
+            locust
+
+aqui estamos utilizando um repo do marketplace para realizar o setup do pip e poder 
+instalar o nosso requeriment, caso queiramos. Que no nosso caso e o locust. Tornando 
+assim pronto para ser utilizando dentro da rotina do loadtest.
+
+Nessa aula, você aprendeu:
+
+O que é o Terraform, sendo uma das principais ferramentas de infraestrutura como 
+código que nos possibilita criar e destruir infraestrutura automaticamente;
+
+Como criar uma infraestrutura através da rotina, utilizando comandos do Terraform, e 
+deixá-la pronta para o teste de carga que faremos futuramente;
+
+Instalar o python e pacotes através do pip, possibilitando a instalação da versão 
+mais recente do Locust diretamente na rotina.
