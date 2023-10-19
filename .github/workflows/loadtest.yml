@@ -31,13 +31,32 @@ jobs:
       - run: terraform -chdir=Infra_CI/env/homolog apply auto-approve
 
       - run: echo "$(terraform chdir=Infra_CI/env/homolog output -raw IP_alb)"
-
+        id: URL
+        
       - name: Setup Python
         uses: actions/setup-python@v4.7.1
         with:
-          python-version: 3.10
+          python-version: "3.10"
         
       - uses: BSFishy/pip-action@v1
         with:
           packages: |
             locust
+
+      - run: | 
+          echo "from locust import HttpUser, TaskSet, task, between" >> locustfile.py
+          echo "" >> locustfile.py
+          echo "class UserTasks(TaskSet):"  >> locustfile.py
+          echo "    @task(1)" >> locustfile.py
+          echo "    def index(self):" >> locustfile.py
+          echo '        self.client.get("/leo")' >> locustfile.py
+          echo "" >> locustfile.py
+          echo "class WebsiteUser(HttpUser):" >> locustfile.py
+          echo "    tasks = [UserTasks]" >> locustfile.py
+          echo "    wait_time = between(1, 5)" >> locustfile.py
+          cat locustfile.py
+
+      - name: Roda teste de carga
+        run: sleep 60s ; locust -f locustfile.py --headless -u 10 -r 5 --run-time 60s -H http://${{ steps.URL.outputs.stdout }}
+          
+      - run: terraform -chdir=Infra_CI/env/Homolog destroy -auto-approve

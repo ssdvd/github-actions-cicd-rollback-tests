@@ -1,0 +1,71 @@
+Arquivo de configuracao:
+
+para fazer com que o locust faca o que queremos dentro do nosso app, devemos primeiro
+criar um arquivo de configuracao, da seguinte maneira, iremos criar um job sem nome
+apenas executando o RUN, com o bloco de cod:
+
+      - run: |
+          echo "from locust import HttpUser, TaskSet, task, between" >> locustfile.py
+          echo "" >> locustfile.py
+          echo "class UserTasks(TaskSet):" >> locustfile.py
+          echo "	@task(1)" >> locustfile.py
+          echo "	def index(self):" >> locustfile.py
+          echo '		self.client.get("/bruno")' >> locustfile.py
+          echo "" >> locustfile.py
+          echo "class WebsiteUser(HttpUser):" >> locustfile.py
+          echo "	tasks = [UserTasks]" >> locustfile.py
+          echo "	wait_time = between(1, 5)" >> locustfile.py
+
+aqui estamos executando varios echo e direcionando para o arquivo locustfile.py,
+assim inserindo todo o nosso conteudo necessario para o arquivo.
+
+teste de carga:
+
+para realizarmos o teste de carga, temos que executar o nosso locust junto com o 
+arquivo de configuracao refem criado, e para isso fazemos o seguinte:
+
+- name: Roda teste de carga
+run: sleep 60s ; locust -f locustfile.py --headless -u 10 -r 5 --run-time 60s -H http://${{ steps.URL.outputs.stdout }}
+
+em run: sleep 60s ;, apois a criacao do arquivo de config locust, esse comando fara
+com o que a proxima instrucao seja executada apos 60s.
+
+em locust -f locustfile.py --headless -u 10 -r 5 --run-time 60s, estamos chamando a
+ferramenta locust para executar o nosso arquivo, sem a interface(--headless), e sera
+utilizando por 10 usuarios e cada usuarios fara 5 requisicoes por seg, durante o tempo
+de 60s.
+
+em  -H http://${{ steps.URL.outputs.stdout }}, aqui estamos definindo qual protocolo
+iremos utilizar(http://), e estamos utilizando as variaveis do github actions, para
+poder capturar o output de um passo que foi criado anteriormente, no caso esse:
+
+      - run: echo "$(terraform chdir=Infra_CI/env/homolog output -raw IP_alb)"
+        id: URL
+
+com a adicao do id: URL, dentro da nossa variavel estamos chamado de um passo(step)
+no id URL, com a saida(output) e queremos a saida padrao(stdout), pois o linux 
+tambem tem a saida para erros, por isso o nome como sdout.
+
+Finalizando a infra:
+
+e para finalizar toda a infra criada para o teste de carga, devemos executar o comando
+do terraform:
+
+      - run: terraform -chdir=Infra_CI/env/Homolog destroy -auto-approve
+
+assim, temos certeza que toda a infra que foi criada para o teste, sera destruida 
+para que assim nao gere mais custo do que deveria.
+
+Nessa aula, você aprendeu como:
+
+Criar um arquivo de configuração do Locust, possibilitando a execução do teste de 
+carga nos locais corretos da aplicação, para não recebermos erros como o erro 404;
+
+Realizar o teste de carga, possibilitando assim a obtenção de métricas muito 
+importantes para o desempenho da aplicação;
+
+Destruir a infra que foi criada anteriormente, e assim reduzir os custos desse 
+tipo de teste ao mínimo possível e viabilizando a execução do teste;
+
+Compreender as métricas disponibilizadas pelo Locust, como o tempo de resposta 
+médio e a distribuição dos tempos de resposta.
